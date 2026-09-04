@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { setUserData } from "./redux/userSlice";
+import { setUserdata } from "./redux/userSlice";
 import Home from "./pages/Home";
 import getCurrentUser from "./features/getCurrentUser";
 
@@ -12,7 +12,7 @@ function App() {
       const data = await getCurrentUser();
 
       if (data) {
-        dispatch(setUserData(data));
+        dispatch(setUserdata(data));
       }
     };
 

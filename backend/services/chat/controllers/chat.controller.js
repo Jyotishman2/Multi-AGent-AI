@@ -21,16 +21,25 @@ export const createConversation = async (req, res) => {
 export const getConversation = async (req, res) => {
   try {
     const userId = req.headers["x-user-id"];
-    console.log("userId", userId);
+
+    console.log("userId:", userId);
+
+    if (!userId) {
+      return res.status(400).json({
+        message: "User ID is missing",
+      });
+    }
 
     const conversation = await Conversation.find({
-      userId: userId,
+      userId,
     }).sort({ updatedAt: -1 });
 
     return res.status(200).json(conversation);
   } catch (error) {
+    console.error("GET CONVERSATION ERROR:", error);
+
     return res.status(500).json({
-      message: `get conversation error ${error}`,
+      message: error.message,
     });
   }
 };
@@ -39,26 +48,30 @@ export const updateConversation = async (req, res) => {
   try {
     const { id, title } = req.body;
 
-    const conversation = await Conversation.findByIdAndUpdate(id, {
-      title,
-    });
+    const conversation = await Conversation.findByIdAndUpdate(
+      id,
+      { title },
+      { new: true }
+    );
 
     return res.status(200).json(conversation);
   } catch (error) {
     return res.status(500).json({
-      message: `get conversation error ${error}`,
+      message: `update conversation error ${error}`,
     });
   }
 };
 
 export const saveMessage = async (req, res) => {
   try {
-    const { conversationId, role, content } = req.body;
+    const { conversationId, role, content,images,artifacts} = req.body;
 
     const message = await Message.create({
       conversationId,
       content,
       role,
+      images,
+      artifacts
     });
 
     return res.status(200).json(message);
@@ -73,7 +86,7 @@ export const getMessages = async (req, res) => {
   try {
     const messages = await Message.find({
       conversationId: req.params.conversationId,
-    }).sort({ createdAt: -1 });
+    })
 
     return res.status(200).json(messages);
   } catch (error) {
