@@ -26,9 +26,8 @@ export const pdfConfig = {
     process.env.QDRANT_COLLECTION || "cortex_pdf_chunks",
 
   qdrantVectorSize: Number(
-    process.env.QDRANT_VECTOR_SIZE || 768
-  ),
-
+  process.env.QDRANT_VECTOR_SIZE || 3072
+),
   // Supabase storage
   supabaseUrl: process.env.SUPABASE_URL,
 

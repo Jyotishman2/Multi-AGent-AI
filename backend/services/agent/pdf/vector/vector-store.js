@@ -57,26 +57,47 @@ export const upsertChunks = async (chunks) => {
   chunks.forEach((chunk) => memoryVectors.set(String(chunk.id), chunk));
 };
 
-export const searchChunks = async ({ vector, userId, documentIds, limit = 6 }) => {
+export const searchChunks = async ({
+  vector,
+  userId,
+  documentIds,
+  limit = 6,
+}) => {
   if (qdrant) {
     await ensureCollection();
+
     const filter = {
       must: [
-        { key: "userId", match: { value: userId } },
+        {
+          key: "userId",
+          match: {
+            value: userId,
+          },
+        },
         ...(documentIds?.length
-          ? [{ key: "documentId", match: { any: documentIds } }]
+          ? [
+              {
+                key: "documentId",
+                match: {
+                  any: documentIds,
+                },
+              },
+            ]
           : []),
       ],
     };
 
-    const results = await qdrant.search(pdfConfig.qdrantCollection, {
-      vector,
-      limit,
-      with_payload: true,
-      filter,
-    });
+    const response = await qdrant.query(
+      pdfConfig.qdrantCollection,
+      {
+        query: vector,
+        limit,
+        with_payload: true,
+        filter,
+      }
+    );
 
-    return results.map((result) => ({
+    return response.points.map((result) => ({
       score: result.score,
       ...result.payload,
     }));
@@ -86,7 +107,8 @@ export const searchChunks = async ({ vector, userId, documentIds, limit = 6 }) =
     .filter(
       (chunk) =>
         chunk.metadata.userId === userId &&
-        (!documentIds?.length || documentIds.includes(chunk.metadata.documentId))
+        (!documentIds?.length ||
+          documentIds.includes(chunk.metadata.documentId))
     )
     .map((chunk) => ({
       score: cosineSimilarity(vector, chunk.vector),
