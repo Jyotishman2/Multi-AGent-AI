@@ -19,7 +19,29 @@ const fallbackEmbedding = (text, size = pdfConfig.qdrantVectorSize) => {
 };
 
 export const embedDocuments = async (texts) => {
-  if (embeddings) return embeddings.embedDocuments(texts);
+  if (embeddings) {
+    const vectors = await embeddings.embedDocuments(texts);
+
+    console.log("PDF embeddings:", {
+      inputCount: texts.length,
+      vectorCount: vectors.length,
+      vectorLengths: vectors.map((v) =>
+        Array.isArray(v) ? v.length : -1
+      ),
+    });
+
+    if (
+      vectors.length !== texts.length ||
+      vectors.some(
+        (v) => !Array.isArray(v) || v.length === 0
+      )
+    ) {
+      throw new Error("Embedding generation returned empty vectors");
+    }
+
+    return vectors;
+  }
+
   return texts.map(fallbackEmbedding);
 };
 
