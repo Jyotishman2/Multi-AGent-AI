@@ -1,5 +1,7 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
+    Crown,
+    FileText,
     LogOut,
     Menu,
     MessageSquare,
@@ -20,12 +22,16 @@ import {
 } from "../redux/conversationSlice.js";
 import { createConversation } from "../features/createConversation.js";
 import logOut from "../features/logOut.js";
-import { setUserData } from "../redux/userSlice.js";
+import PlanModal from "./PlanModal.jsx";
+import PdfWorkspace from "./PdfWorkspace.jsx";
 
 function SideBar() {
     const [collapsed, setCollapsed] = useState(false);
     const [imageError, setImageError] = useState(false);
     const [mobileOpen, setMobileOpen] = useState(false);
+    const [planOpen, setPlanOpen] = useState(false);
+    const [pdfOpen, setPdfOpen] = useState(false);
+    const [currentPlan, setCurrentPlan] = useState("free");
 
     const dispatch = useDispatch();
 
@@ -34,6 +40,10 @@ function SideBar() {
     );
 
     const { userData } = useSelector((state) => state.user);
+
+    const handlePlanUpdated = useCallback((plan) => {
+        setCurrentPlan(plan);
+    }, []);
 
     useEffect(() => {
         const getConv = async () => {
@@ -58,7 +68,8 @@ function SideBar() {
 
     if (collapsed) {
         return (
-            <div className="hidden lg:flex flex-col items-center w-[56px] h-screen bg-[#0d0f14] border-r border-white/[0.06] py-4 gap-1 shrink-0">
+            <>
+                <div className="hidden lg:flex flex-col items-center w-[56px] h-screen bg-[#0d0f14] border-r border-white/[0.06] py-4 gap-1 shrink-0">
                 <button
                     className="flex items-center justify-center w-9 h-9 rounded-xl text-slate-500 hover:text-slate-200 hover:bg-white/[0.05] transition-colors duration-150 bg-transparent border-none cursor-pointer mb-1"
                     onClick={() => setCollapsed(false)}
@@ -71,6 +82,26 @@ function SideBar() {
                     onClick={handleCreateConversation}
                 >
                     <Plus size={17} />
+                </button>
+
+                <button
+                    type="button"
+                    aria-label="View plans"
+                    title="View plans"
+                    className="flex items-center justify-center w-9 h-9 rounded-xl text-slate-500 hover:text-indigo-300 hover:bg-white/[0.05] transition-colors duration-150 bg-transparent border-none cursor-pointer"
+                    onClick={() => setPlanOpen(true)}
+                >
+                    <Crown size={16} />
+                </button>
+
+                <button
+                    type="button"
+                    aria-label="Open PDF Studio"
+                    title="PDF Studio"
+                    className="flex items-center justify-center w-9 h-9 rounded-xl text-slate-500 hover:text-amber-300 hover:bg-white/[0.05] transition-colors duration-150 bg-transparent border-none cursor-pointer"
+                    onClick={() => setPdfOpen(true)}
+                >
+                    <FileText size={16} />
                 </button>
 
                 <div className="flex-1 overflow-y-auto px-2.5 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden pt-5">
@@ -117,7 +148,15 @@ function SideBar() {
                         </div>
                     )}
                 </div>
-            </div>
+                </div>
+                {planOpen && (
+                    <PlanModal
+                        onClose={() => setPlanOpen(false)}
+                        onPlanUpdated={handlePlanUpdated}
+                    />
+                )}
+                {pdfOpen && <PdfWorkspace onClose={() => setPdfOpen(false)} />}
+            </>
         );
     }
 
@@ -186,6 +225,17 @@ function SideBar() {
                         </button>
                     </div>
 
+                    <div className="px-4 pt-2">
+                        <button
+                            type="button"
+                            onClick={() => setPdfOpen(true)}
+                            className="flex w-full items-center justify-center gap-2 rounded-xl border border-amber-300/20 bg-amber-300/[0.08] py-[9px] text-sm font-medium text-amber-100 hover:bg-amber-300/[0.14]"
+                        >
+                            <FileText size={15} />
+                            PDF Studio
+                        </button>
+                    </div>
+
                     <div className="px-5 pt-4 pb-1.5 text-[10.5px] font-semibold uppercase tracking-widest text-slate-600">
                         {conversations?.length > 0
                             ? "Recents"
@@ -237,6 +287,24 @@ function SideBar() {
 
                     <div className="mx-2.5 h-px bg-white/[0.06]" />
 
+                    {userData && (
+                        <div className="px-3.5 pt-3">
+                            <button
+                                type="button"
+                                onClick={() => setPlanOpen(true)}
+                                className="flex w-full items-center justify-between rounded-lg border border-indigo-400/20 bg-indigo-500/[0.08] px-3 py-2 text-left text-xs text-indigo-100 hover:bg-indigo-500/[0.14]"
+                            >
+                                <span className="flex items-center gap-2">
+                                    <Crown size={14} className="text-indigo-300" />
+                                    View plans
+                                </span>
+                                <span className="text-[10px] text-indigo-300">
+                                    {currentPlan}
+                                </span>
+                            </button>
+                        </div>
+                    )}
+
                     <div className="px-3.5 py-3.5">
                         {userData ? (
                             <div className="flex items-center gap-2.5 rounded-xl px-3 py-2.5">
@@ -287,6 +355,13 @@ function SideBar() {
                     </div>
                 </div>
             </div>
+            {planOpen && (
+                <PlanModal
+                    onClose={() => setPlanOpen(false)}
+                    onPlanUpdated={handlePlanUpdated}
+                />
+            )}
+            {pdfOpen && <PdfWorkspace onClose={() => setPdfOpen(false)} />}
         </>
     );
 }
