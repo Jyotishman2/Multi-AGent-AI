@@ -14,15 +14,51 @@ let collectionReady;
 
 const ensureCollection = async () => {
   if (!qdrant) return;
+
   if (!collectionReady) {
-    collectionReady = qdrant
-      .getCollection(pdfConfig.qdrantCollection)
-      .catch(() =>
-        qdrant.createCollection(pdfConfig.qdrantCollection, {
-          vectors: { size: pdfConfig.qdrantVectorSize, distance: "Cosine" },
-        })
+    collectionReady = (async () => {
+      try {
+        await qdrant.getCollection(pdfConfig.qdrantCollection);
+      } catch (error) {
+        await qdrant.createCollection(
+          pdfConfig.qdrantCollection,
+          {
+            vectors: {
+              size: pdfConfig.qdrantVectorSize,
+              distance: "Cosine",
+            },
+          }
+        );
+      }
+
+      const collection = await qdrant.getCollection(
+        pdfConfig.qdrantCollection
       );
+
+      const payloadSchema = collection.payload_schema || {};
+
+      if (!payloadSchema.userId) {
+        await qdrant.createPayloadIndex(
+          pdfConfig.qdrantCollection,
+          {
+            field_name: "userId",
+            field_schema: "keyword",
+          }
+        );
+      }
+
+      if (!payloadSchema.documentId) {
+        await qdrant.createPayloadIndex(
+          pdfConfig.qdrantCollection,
+          {
+            field_name: "documentId",
+            field_schema: "keyword",
+          }
+        );
+      }
+    })();
   }
+
   await collectionReady;
 };
 
