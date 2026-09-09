@@ -3,7 +3,7 @@ import fs from "fs";
 
 const serviceAccountPath =
   process.env.FIREBASE_SERVICE_ACCOUNT_PATH ||
-  "./services/auth/serviceAccountKey.json";
+  "./serviceAccountKey.json";
 
 const serviceAccount = JSON.parse(
   fs.readFileSync(serviceAccountPath, "utf8")
