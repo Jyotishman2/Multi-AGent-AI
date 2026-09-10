@@ -87,7 +87,7 @@ function Home() {
             {/* Heading */}
             <div className="mb-7">
               <h2 className="text-[22px] font-semibold text-white tracking-tight">
-                Welcome to CortexAI
+                Welcome to MultiAgentAI
               </h2>
 
               <p className="mt-2 text-[13.5px] leading-relaxed text-slate-400">

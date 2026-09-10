@@ -69,7 +69,7 @@ function PlanModal({ onClose, onPlanUpdated }) {
         key: order.keyId,
         amount: order.amount,
         currency: order.currency,
-        name: "CortexAI",
+        name: "MultiAgentAI",
         description: `${order.plan.name} plan`,
         order_id: order.orderId,
         handler: async (response) => {
